@@ -35,4 +35,4 @@ GitHub Actions cron (`.github/workflows/daily-sync.yml`, 02:00 UTC): runs tests 
 ## Screenshot
 Question: *"How do I add a YouTube video?"* - answered with the cited Article URL.
 
-![assistant answer](docs/assistant_answer.png)
+![assistant answer](docs/ai_studio_answer.png)
