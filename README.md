@@ -29,8 +29,8 @@ docker run --rm -e API_KEY=<gemini-key> kb-sync main.py   # runs once, exits 0
 ## Daily job
 GitHub Actions cron (`.github/workflows/daily-sync.yml`, 02:00 UTC): runs tests â†’ builds the Dockerfile â†’ runs the container â†’ publishes counts to the job summary and uploads `sync.log` + `last_run.json` as an artefact.
 
-- **Job logs:** RUN_LINK_PLACEHOLDER
-- Sample log line: `added: 0 | updated: 0 | skipped: 413 | deleted: 0 | failed: 0`
+- **Job logs:** [all runs](https://github.com/musknguyen/kbx-delta-ingest/actions/workflows/daily-sync.yml) · [last run + artefact](https://github.com/musknguyen/kbx-delta-ingest/actions/runs/38855268228)
+- Last run: `articles_scraped: 413 | added: 0 | updated: 0 | skipped: 413 | deleted: 0 | failed: 0`
 
 ## Screenshot
 Question: *"How do I add a YouTube video?"* â€” answered from the uploaded docs with the cited Article URL.
