@@ -1,7 +1,6 @@
 # SCIO Clone — Build Plan
 
 > Draft to hand to the team before the first line of code. Every number below has a "why"; the assumptions section lists what would change them.
-> Items marked **[verify]** are things I want to re-confirm hands-on in the trial account before the review.
 
 ---
 
