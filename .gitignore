@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+*.log
+*.zip
+*.docx
+data/last_run.json
+push_to_github.sh
