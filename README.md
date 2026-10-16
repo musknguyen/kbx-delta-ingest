@@ -1,0 +1,38 @@
+# kbx-delta-ingest
+
+Scrapes a Zendesk help center â†’ clean Markdown â†’ **Gemini File Search** (vector store) via API, then re-runs daily and uploads only the delta.
+
+## Setup
+```bash
+cp .env.sample .env          # put your GEMINI_API_KEY in .env
+python -m venv .venv && . .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Run locally
+```bash
+python main.py                                        # scrape + delta upload, logs counts, exits 0
+python main.py ask "How do I add a YouTube video?"    # query the assistant (OptiBot system prompt)
+pytest -q                                             # 11 unit tests (cleaner + delta logic)
+
+docker build -t kb-sync .
+docker run --rm -e API_KEY=<gemini-key> kb-sync main.py   # runs once, exits 0
+```
+
+## How it works
+- **Scrape** â€“ Zendesk Help Center API v2 (`/api/v2/help_center/en-us/articles.json`), all published articles (413 today; `MAX_ARTICLES` to cap).
+- **Clean** â€“ BeautifulSoup strips nav/header/footer/scripts/ads/inline base64 images; markdownify emits ATX headings, fenced code blocks with language, and help-center links rewritten to **relative** paths. Each file is `data/articles/<slug>-<id>.md` and starts with `# Title` + `Article URL: â€¦` so every chunk's source can be cited.
+- **Chunking** â€“ whitespace-token windows of **512 tokens with 128 overlap** (512 is Gemini's max). Most articles are short how-tos (median â‰ˆ 1 chunk); a 512-token window keeps a full numbered procedure together, and the 25 % overlap keeps step N and N+1 in the same chunk when a procedure spans a boundary. Logged as `chunks_embedded`.
+- **Delta** â€“ each document is uploaded with metadata `article_id` + `content_hash` (SHA-256 of the cleaned Markdown). On every run the store's documents are listed and compared: new â†’ upload, changed hash â†’ upload new then delete old, same hash â†’ skip, missing from help center â†’ delete. State lives **in the vector store itself**, so the container is stateless and safe to run anywhere.
+- **Assistant** â€“ `gemini-3.5-flash` + File Search tool with the verbatim OptiBot system prompt (falls back to lite models on 503).
+
+## Daily job
+GitHub Actions cron (`.github/workflows/daily-sync.yml`, 02:00 UTC): runs tests â†’ builds the Dockerfile â†’ runs the container â†’ publishes counts to the job summary and uploads `sync.log` + `last_run.json` as an artefact.
+
+- **Job logs:** RUN_LINK_PLACEHOLDER
+- Sample log line: `added: 0 | updated: 0 | skipped: 413 | deleted: 0 | failed: 0`
+
+## Screenshot
+Question: *"How do I add a YouTube video?"* â€” answered from the uploaded docs with the cited Article URL.
+
+![assistant answer](docs/assistant_answer.png)
